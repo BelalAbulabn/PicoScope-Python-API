@@ -1,12 +1,65 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Hello, World!</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
-  </head>
-  <body>
-      <h1 class="title">Hello World! </h1>
-      <p id="currentTime"></p>
-      <script src="{{ url_for('static', filename='script.js') }}"></script>
-  </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PicoScope Signal Generator</title>
+    <style>
+        /* Add some basic styling */
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        label { display: block; margin-top: 10px; }
+        input, select { width: 200px; }
+        button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Add HTML elements -->
+    <label for="waveType">Wave Type:</label>
+    <select id="waveType">
+        <option>PS4000A_SINE</option>
+        <option>PS4000A_SQUARE</option>
+        <option>PS4000A_TRIANGLE</option>
+        <option>PS4000A_RAMP_UP</option>
+        <option>PS4000A_RAMP_DOWN</option>
+        <option>PS4000A_SINC</option>
+        <option>PS4000A_GAUSSIAN</option>
+        <option>PS4000A_HALF_SINE</option>
+        <option>PS4000A_DC_VOLTAGE</option>
+        <option>PS4000A_WHITE_NOISE</option>
+        <option>PS4000A_PRBS</option>
+        <option>PS4000A_PULSE</option>
+        <option>PS4000A_MAX_WAVE_TYPES</option>
+        <!-- ... other options ... -->
+    </select>
+    
+    <label for="startFreq">Start Frequency:</label>
+    <input type="text" id="startFreq">
+    
+    <label for="stopFreq">Stop Frequency:</label>
+    <input type="text" id="stopFreq">
+    
+    <label for="increment">Increment:</label>
+    <input type="text" id="increment" value="0">
+    
+    <label for="dwellTime">Dwell Time:</label>
+    <input type="text" id="dwellTime" value="1">
+    
+    <label for="sweepType">Sweep Type:</label>
+    <select id="sweepType">
+        <option>UP</option>
+        <option>DOWN</option>
+        <option>UPDOWN</option>
+        <option>DWONUP</option>
+        
+        <!-- ... other options ... -->
+    </select>
+    
+    <label for="peakToPeakVoltage">Peak-to-Peak Voltage:</label>
+    <input type="text" id="peakToPeakVoltage" value="2000000">
+    
+    <button onclick="setSignalGenerator()">Set Signal Generator</button>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+</body>
 </html>
