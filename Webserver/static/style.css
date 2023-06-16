@@ -1,7 +1,7 @@
 
 body{
     padding: 25px;
-  }
+}
   .title {
       color: #5C6AC4;
   }
@@ -51,10 +51,31 @@ body{
   .button2:hover {
     background-color: #008CBA;
     color: white;
-  }
+  }s
 
 /* Add some basic styling */
 body { font-family: Arial, sans-serif; margin: 20px; }
 label { display: block; margin-top: 10px; }
 input, select { width: 200px; }
 button { margin-top: 10px; }
+.container {
+  display: flex;
+}
+
+
+
+.container {
+  display: flex;
+}
+/*let the chart section take up the left remananing space*/
+.chart-section {
+  flex: 100;
+}
+
+/*let the settings section take up the left 100px*/
+
+
+.settings-section {
+  flex: 5;
+  padding-left: 100px;
+}

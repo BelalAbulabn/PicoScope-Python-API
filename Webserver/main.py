@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import ctypes
 from picosdk.ps4000a import ps4000a as ps
 from picosdk.functions import assert_pico_ok
+from flask_cors import CORS  # Import this
 import sys
 
 sys.path.append('..')
@@ -9,7 +10,7 @@ from GUI.ps4000aSigGen import PicoScope4000a
 from picosdk.errors import PicoSDKCtypesError
 
 app = Flask(__name__)
-
+CORS(app)  
 try:
     picoscope = PicoScope4000a()
     picoscope.open_device()
@@ -41,6 +42,8 @@ def set_signal_generator():
 
     return jsonify({'status': 'success'})
 
+
+@app.route('/connect_device', methods=['POST'])
 def connect_device():
     global device_connected
     try:

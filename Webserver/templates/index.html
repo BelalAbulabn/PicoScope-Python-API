@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>PicoScope Signal Generator</title>
-    <link rel="stylesheet" href="style.css">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js"></script>
 </head>
 <body>
 
@@ -17,74 +19,86 @@
     {% endif %}
 
     <!-- Add HTML elements -->
-    <div>
-  
    
-            <label for="waveType">Wave Type:</label>
-        
-            <select id="waveType">
-                <option>PS4000A_SINE</option>
-                <option>PS4000A_SQUARE</option>
-                <option>PS4000A_TRIANGLE</option>
-                <option>PS4000A_RAMP_UP</option>
-                <option>PS4000A_RAMP_DOWN</option>
-                <option>PS4000A_SINC</option>
-                <option>PS4000A_GAUSSIAN</option>
-                <option>PS4000A_HALF_SINE</option>
-                <option>PS4000A_DC_VOLTAGE</option>
-                <option>PS4000A_WHITE_NOISE</option>
-                <option>PS4000A_PRBS</option>
-                <option>PS4000A_PULSE</option>
-                <option>PS4000A_MAX_WAVE_TYPES</option>
-                <!-- ... other options ... -->
-            </select>
-        </div>
-        <div>
-            <label for="startFreq">Start Frequency:</label>
-            <input type="text" id="startFreq">
-        </div>
-        <div>
-            <label for="stopFreq">Stop Frequency:</label>
-            <input type="text" id="stopFreq">
-        </div>
-    
-        <div>
-            <label for="increment">Increment:</label>
-            <input type="text" id="increment">	
-        </div>   
-        <div>
-            <label for="dwellTime">Dwell Time:</label>
-            <input type="text" id="dwellTime" value="1">
-        </div>
+    <div class="container">
+        <!-- Chart Section -->
+        <div class="chart-section">
 
-        <div>
-            <label for="sweepType">Sweep Type:</label>
-            <select id="sweepType">
-                <option>UP</option>
-                <option>DOWN</option>
-                <option>UPDOWN</option>
-                <option>DWONUP</option>
+            <canvas id="signalChart"></canvas>
+
+        </div>
+           <!-- Settings Section -->
+        <div class="settings-section">
+            <div>
+                    <label for="waveType">Wave Type:</label>
                 
+                    <select id="waveType">
+                        <option>PS4000A_SINE</option>
+                        <option>PS4000A_SQUARE</option>
+                        <option>PS4000A_TRIANGLE</option>
+                        <option>PS4000A_RAMP_UP</option>
+                        <option>PS4000A_RAMP_DOWN</option>
+                        <option>PS4000A_SINC</option>
+                        <option>PS4000A_GAUSSIAN</option>
+                        <option>PS4000A_HALF_SINE</option>
+                        <option>PS4000A_DC_VOLTAGE</option>
+                        <option>PS4000A_WHITE_NOISE</option>
+                        <option>PS4000A_PRBS</option>
+                        <option>PS4000A_PULSE</option>
+                        <option>PS4000A_MAX_WAVE_TYPES</option>
+                        <!-- ... other options ... -->
+                    </select>
+            </div>   
+                
+            <div>
+                <label for="startFreq">Start Frequency:</label>
+                <input type="text" id="startFreq">
+            </div>
+            <div>
+                <label for="stopFreq">Stop Frequency:</label>
+                <input type="text" id="stopFreq">
+            </div>
+        
+            <div>
+                <label for="increment">Increment:</label>
+                <input type="text" id="increment" value="0">	
+            </div>   
+            <div>
+                <label for="dwellTime">Dwell Time:</label>
+                <input type="text" id="dwellTime" value="1">
+            </div>
+
+            <div>
+                <label for="sweepType">Sweep Type:</label>
+                <select id="sweepType">
+                    <option>UP</option>
+                    <option>DOWN</option>
+                    <option>UPDOWN</option>
+                    <option>DWONUP</option>
+                    
+                    <!-- ... other options ... -->
+                </select>
+
+            </div>
+            <div>
+                <label for="offsetVoltage">Offset Voltage:</label>
+                <input type="text" id="offsetVoltage" value="0">
+            </div>
+            <div>
+
+                <button onclick="setSignalGenerator()">Set Signal Generator</button>
+            <div> 
                 <!-- ... other options ... -->
             </select>
 
+      
         </div>
-            
-            <!-- ... other options ... -->
-        </select>
-        
-        <label for="peakToPeakVoltage">Peak-to-Peak Voltage:</label>
-        <input type="text" id="peakToPeakVoltage" value="2000000">
 
         
-        <div>
-    
-            <button onclick="setSignalGenerator()">Set Signal Generator</button>
-        <div> 
+     
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="script.js"></script>
-    <script src="script.js" defer></script>
 
+
+    
 </body>
 </html>
