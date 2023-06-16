@@ -1,11 +1,4 @@
-function showTime() {
-	document.getElementById('currentTime').innerHTML = new Date().toUTCString();
-	
-}
-showTime();
-setInterval(function () {
-	showTime();
-}, 1000);
+
 function setSignalGenerator() {
 	var data = {
 		wavetype: document.getElementById("waveType").value,
@@ -27,6 +20,7 @@ function setSignalGenerator() {
 		}
 	});
 }
+
 function onButtonClick() {
 	try {
 		// Call the function that might throw an error
@@ -36,3 +30,23 @@ function onButtonClick() {
 		alert(error.message);
 	}
 }
+
+function attemptConnection() {
+	fetch('/connect_device', {
+		method: 'POST'
+	})
+	.then(response => response.json())
+	.then(data => {
+		if (data.status === 'success') {
+			location.reload();
+		} else {
+			document.getElementById('error').innerHTML = data.message;
+		}
+	})
+}
+document.addEventListener("DOMContentLoaded", function() {
+    var button = document.querySelector("button");
+    if (button) {
+        button.addEventListener("click", attemptConnection);
+    }
+});

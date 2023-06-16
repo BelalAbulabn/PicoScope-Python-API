@@ -52,4 +52,9 @@ body{
     background-color: #008CBA;
     color: white;
   }
-  
+
+/* Add some basic styling */
+body { font-family: Arial, sans-serif; margin: 20px; }
+label { display: block; margin-top: 10px; }
+input, select { width: 200px; }
+button { margin-top: 10px; }
