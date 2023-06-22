@@ -8,6 +8,8 @@ import sys
 sys.path.append('..')
 from GUI.ps4000aSigGen import PicoScope4000a
 from picosdk.errors import PicoSDKCtypesError
+from GUI.PicoScopeStreamer import PicoScopeStreamer
+from GUI.PicoScope import PicoScope
 
 app = Flask(__name__)
 CORS(app)  
@@ -23,7 +25,40 @@ except PicoSDKCtypesError:
 def home():
     return render_template('index.html',device_connected=device_connected)
 
+@app.route('/fetch-data')
+def fetch_data():
+    print("fetch_data route is being executed") # Add this lin
 
+    try:
+        print("Inside the try block") # Add this line
+        # Get parameters from the query string
+        channel_range = request.args.get('channelRange', default=5, type=int)
+        buffer_size = request.args.get('bufferSize', default=500, type=int)
+        num_buffers_to_capture = 10  # This can also be parameterized
+        sample_interval = request.args.get('sampleInterval', default=250, type=int)
+
+        # Pass the parameters to the PicoScopeStreamer
+        streamer = PicoScopeStreamer(
+            channel_range=channel_range,
+            size_of_one_buffer=buffer_size,
+            num_buffers_to_capture=num_buffers_to_capture,
+            sample_interval=sample_interval
+        )
+        
+        # Fetch the data
+        time_array, adc2mVChAMax, adc2mVChBMax = streamer.fetch_data()
+                # Print fetched data to console
+        print("Time array:", time_array)
+        print("Channel A data:", adc2mVChAMax)
+        print("Channel B data:", adc2mVChBMax)
+
+        # Return the data as JSON
+        return jsonify({'time': time_array.tolist(), 'channelA': adc2mVChAMax.tolist(), 'channelB': adc2mVChBMax.tolist()})
+    
+    except Exception as e:
+        print("An error occurred:", e) # Add this line
+        return jsonify({'error': str(e)})
+    
 @app.route('/set_signal_generator', methods=['POST'])
 def set_signal_generator():
     if not device_connected:
@@ -47,7 +82,8 @@ def set_signal_generator():
 def connect_device():
     global device_connected
     try:
-        picoscope = PicoScope4000a()
+        picoscope = PicoScope()
+
         picoscope.open_device()
         device_connected = True
         return jsonify({'status': 'success'})

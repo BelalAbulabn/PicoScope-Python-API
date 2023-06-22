@@ -151,7 +151,10 @@ function attemptConnection() {
 //     });
 // });
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
+
+    var signalChart; // Declare signalChart here so it can be accessed in different functions
+
     // Function to set the signal generator
     function setSignalGenerator() {
         var waveTypeElement = document.getElementById("waveType");
@@ -161,7 +164,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var dwellTimeElement = document.getElementById("dwellTime");
         var sweepTypeElement = document.getElementById("sweepType");
         var peakToPeakVoltageElement = document.getElementById("peakToPeakVoltage");
-        
+
         var data = {
             wavetype: waveTypeElement ? waveTypeElement.value : null,
             start_freq: startFreqElement ? startFreqElement.value : null,
@@ -171,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function() {
             sweep_type: sweepTypeElement ? sweepTypeElement.value : null,
             pk_to_pk: peakToPeakVoltageElement ? peakToPeakVoltageElement.value : null
         };
-        
+
         console.log("Data to be sent:", data);
 
         $.ajax({
@@ -179,69 +182,74 @@ document.addEventListener("DOMContentLoaded", function() {
             type: 'post',
             contentType: 'application/json',
             data: JSON.stringify(data),
-            success: function(response) {
+            success: function (response) {
                 console.log("Response from server:", response);
             }
         });
     }
-    
-    // // Function to handle the button click
-    // function onButtonClick() {
-    //     try {
-    //         setSignalGenerator();
-    //     } catch (error) {
-    //         alert(error.message);
-    //     }
-    // }
-    
-    // Attach event listener to the button
-	// Attach event listener to the button
-	var signalButton = document.querySelector("#setSignalGeneratorButton");
-	if (signalButton) {
-		signalButton.addEventListener("click", setSignalGenerator);
-	}
 
-    // Initialize the chart
-    var ctx = document.getElementById('signalChart').getContext('2d');
-    var labels = [];
-    var data = [];
-    for (var i = 0; i < 360; i += 10) {
-        var radians = i * (Math.PI / 180);
-        var sineValue = Math.sin(radians);
-        labels.push(i);
-        data.push(sineValue);
+    // Function to update the chart
+    function updateChart() {
+        var channelRange = document.getElementById("channelRange").value;
+        var bufferSize = document.getElementById("bufferSize").value;
+        var sampleInterval = document.getElementById("sampleInterval").value;
+
     }
+        // Fetch updated data from the server
 
-    var timeScale = 's';
-    var voltageScale = 'V';
-
-    var signalChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Signal',
-                data: data,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time (' + timeScale + ')'
-                    }
+    // Initialize the chart with data from the server
+    fetch('/fetch-data')
+        .then(response => response.json())
+        .then(data => {
+            var ctx = document.getElementById('signalChart').getContext('2d');
+            signalChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.time,
+                    datasets: [
+                        {
+                            label: 'Channel A',
+                            data: data.channelA,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Channel B',
+                            data: data.channelB,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
                 },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Voltage (' + voltageScale + ')'
-                    },
-                    beginAtZero: false
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (ns)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Voltage (mV)'
+                            },
+                            beginAtZero: false
+                        }
+                    }
                 }
-            }
+            });
+        });
+
+        var signalButton = document.querySelector("#setSignalGeneratorButton");
+        if (signalButton) {
+            signalButton.addEventListener("click", setSignalGenerator);
         }
-    });
+    
+        var updateChartButton = document.getElementById("updateChartButton");
+        if (updateChartButton) {
+            updateChartButton.addEventListener("click", updateChart);
+        }
+
+    
 });

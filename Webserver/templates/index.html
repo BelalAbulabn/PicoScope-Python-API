@@ -21,12 +21,16 @@
     <!-- Add HTML elements -->
    
     <div class="container">
-        <!-- Chart Section -->
-        <div class="chart-section">
-
-            <canvas id="signalChart"></canvas>
-
+        
+        <div id="chart-controls">
+            <input type="number" id="channelRange" placeholder="Channel Range">
+            <input type="number" id="bufferSize" placeholder="Buffer Size">
+            <input type="number" id="sampleInterval" placeholder="Sample Interval">
+            <button id="updateChartButton">Update Chart</button>
         </div>
+        
+        <canvas id="signalChart"></canvas>
+        
            <!-- Settings Section -->
         <div class="settings-section">
             <div>
