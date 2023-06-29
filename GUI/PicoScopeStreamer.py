@@ -10,13 +10,11 @@ from picosdk.errors import PicoSDKCtypesError
 
 class PicoScopeStreamer:
 
-    def __init__(self, channel_range=7, size_of_one_buffer=500, num_buffers_to_capture=10, sample_interval=250):
+    def __init__(self, channel_range=5, size_of_one_buffer=500, num_buffers_to_capture=10, sample_interval=250):
         self.chandle = ctypes.c_int16()
         self.status = {}
 
-        # Open PicoScope 2000 Series device
-        self.status["openunit"] = ps.ps4000aOpenUnit(ctypes.byref(self.chandle), None)
-        assert_pico_ok(self.status["openunit"])
+
 
         # Set up channel A and B
         self.set_channel('A', channel_range)
@@ -108,12 +106,6 @@ class PicoScopeStreamer:
         # Create time data
         time_array = np.linspace(0, (self.total_samples - 1) * self.actual_sample_interval_ns, self.total_samples)
 
-        # Plot data
-        plt.plot(time_array, adc2mVChAMax[:])
-        plt.plot(time_array, adc2mVChBMax[:])
-        plt.xlabel('Time (ns)')
-        plt.ylabel('Voltage (mV)')
-        plt.show()
 
         # Stop the scope
         self.status["stop"] = ps.ps4000aStop(self.chandle)
@@ -124,12 +116,12 @@ class PicoScopeStreamer:
         assert_pico_ok(self.status["close"])
 
         print(self.status) 
-
+        return time_array, adc2mVChAMax, adc2mVChBMax
 
 # Example usage
 if __name__ == "__main__":
     try:
-        streamer = PicoScopeStreamer(channel_range=7, size_of_one_buffer=500, num_buffers_to_capture=10, sample_interval=250)
+        streamer = PicoScopeStreamer(channel_range=5, size_of_one_buffer=500, num_buffers_to_capture=10, sample_interval=250)
         streamer.fetch_data()
     except PicoSDKCtypesError as e:
         print(f"PicoSDK Error: {e}")

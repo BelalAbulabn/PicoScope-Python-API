@@ -11,6 +11,7 @@
 // 	}
 // }
 
+
 function attemptConnection() {
 	fetch('/connect_device', {
 		method: 'POST'
@@ -156,100 +157,196 @@ document.addEventListener("DOMContentLoaded", function () {
     var signalChart; // Declare signalChart here so it can be accessed in different functions
 
     // Function to set the signal generator
-    function setSignalGenerator() {
-        var waveTypeElement = document.getElementById("waveType");
-        var startFreqElement = document.getElementById("startFreq");
-        var stopFreqElement = document.getElementById("stopFreq");
-        var incrementElement = document.getElementById("increment");
-        var dwellTimeElement = document.getElementById("dwellTime");
-        var sweepTypeElement = document.getElementById("sweepType");
-        var peakToPeakVoltageElement = document.getElementById("peakToPeakVoltage");
+    document.addEventListener("DOMContentLoaded", function () {
 
-        var data = {
-            wavetype: waveTypeElement ? waveTypeElement.value : null,
-            start_freq: startFreqElement ? startFreqElement.value : null,
-            stop_freq: stopFreqElement ? stopFreqElement.value : null,
-            increment: incrementElement ? incrementElement.value : null,
-            dwell_time: dwellTimeElement ? dwellTimeElement.value : null,
-            sweep_type: sweepTypeElement ? sweepTypeElement.value : null,
-            pk_to_pk: peakToPeakVoltageElement ? peakToPeakVoltageElement.value : null
-        };
-
-        console.log("Data to be sent:", data);
-
-        $.ajax({
-            url: '/set_signal_generator',
-            type: 'post',
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            success: function (response) {
-                console.log("Response from server:", response);
-            }
-        });
-    }
-
-    // Function to update the chart
-    function updateChart() {
-        var channelRange = document.getElementById("channelRange").value;
-        var bufferSize = document.getElementById("bufferSize").value;
-        var sampleInterval = document.getElementById("sampleInterval").value;
-
-    }
-        // Fetch updated data from the server
-
-    // Initialize the chart with data from the server
-    fetch('/fetch-data')
-        .then(response => response.json())
-        .then(data => {
-            var ctx = document.getElementById('signalChart').getContext('2d');
-            signalChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.time,
-                    datasets: [
-                        {
-                            label: 'Channel A',
-                            data: data.channelA,
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Channel B',
-                            data: data.channelB,
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Time (ns)'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Voltage (mV)'
-                            },
-                            beginAtZero: false
-                        }
-                    }
+        var signalChart; // Declare signalChart here so it can be accessed in different functions
+    
+        // Function to set the signal generator
+        function setSignalGenerator() {
+            var waveTypeElement = document.getElementById("waveType");
+            var startFreqElement = document.getElementById("startFreq");
+            var stopFreqElement = document.getElementById("stopFreq");
+            var incrementElement = document.getElementById("increment");
+            var dwellTimeElement = document.getElementById("dwellTime");
+            var sweepTypeElement = document.getElementById("sweepType");
+            var peakToPeakVoltageElement = document.getElementById("peakToPeakVoltage");
+    
+            var data = {
+                wavetype: waveTypeElement ? waveTypeElement.value : null,
+                start_freq: startFreqElement ? startFreqElement.value : null,
+                stop_freq: stopFreqElement ? stopFreqElement.value : null,
+                increment: incrementElement ? incrementElement.value : null,
+                dwell_time: dwellTimeElement ? dwellTimeElement.value : null,
+                sweep_type: sweepTypeElement ? sweepTypeElement.value : null,
+                pk_to_pk: peakToPeakVoltageElement ? peakToPeakVoltageElement.value : null
+            };
+    
+            console.log("Data to be sent:", data);
+    
+            $.ajax({
+                url: '/set_signal_generator',
+                type: 'post',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    console.log("Response from server:", response);
                 }
             });
+        }
+        var chart = null;
+    
+        function fillData(limit, offset) {
+            fetch('http://127.0.0.1:5000/?limit=' + limit + '&offset=' + offset)
+            .then(res => {
+                console.log(res);
+                return res.text();
+            })
+            .then(text => {
+                console.log(text);
+                try {
+                    return JSON.parse(text);
+                } catch (err) {
+                    console.error('Could not parse response:', err);
+                }
+            })
+            .then(data => {
+                if (data.chart_data) {
+                var chartData = {
+                    labels: data.chart_data.labels,
+                    datasets: data.chart_data.datasets
+                };
+                var options = {
+                    tooltips: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        xAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Time'
+                            }
+                        }],
+                        yAxes: [{
+                            display: true,
+                            scaleLabel: {
+                                display: true,
+                                labelString: 'Value'
+                            }
+                        }]
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                };
+    
+                if (chart === null) {
+                    var ctx = document.getElementById('line-chart').getContext('2d');
+                    chart = new Chart(ctx, {
+                        type: 'line',
+                        data: chartData,
+                        options: options
+                    });
+                } else {
+                    chart.data.labels = chartData.labels;
+                    chart.data.datasets = chartData.datasets;
+                    chart.update();
+                }
+        
+                setTimeout(() => fillData(1, offset + limit), 1000);
+            }
+            else{
+                console.error('chart_data is not defined in the response:', data);
+            }
+            }).catch(error => {
+            console.error('There was a problem with the fetch operation:', error);
+             });
+        }
+    
+        $(document).ready(function() {
+            fillData(20, 0);
         });
+    });
+    
+    
+          
+
+   
+
+    // Function to update the chart
+    // function updateChart() {
+    //     var channelRange = document.getElementById("channelRange").value;
+    //     console.log(channelRangeInput);  // Debug: print the input element
+    //     console.log(channelRange);  // Debug: print the value
+
+    //     var bufferSize = document.getElementById("bufferSize").value;
+    //     var sampleInterval = document.getElementById("sampleInterval").value;
+
+    // }
+    //     // Fetch updated data from the server
+
+    // // Initialize the chart with data from the server
+    // fetch('/fetch-data?channelRange=' + channelRange + '&bufferSize=' + bufferSize + '&sampleInterval=' + sampleInterval)
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         // Update the chart data
+    //         var ctx = document.getElementById('signalChart').getContext('2d');
+
+    //         signalChart.data.labels = data.time;
+    //         signalChart.data.datasets[0].data = data.channelA;
+    //         signalChart.data.datasets[1].data = data.channelB;
+    //         var ctx = document.getElementById('signalChart').getContext('2d');
+    //         signalChart = new Chart(ctx, {
+    //             type: 'line',
+    //             data: {
+    //                 labels: data.time,
+    //                 datasets: [
+    //                     {
+    //                         label: 'Channel A',
+    //                         data: datta.channelA,
+    //                         borderColor: 'rgba(75, 192, 192, 1)',
+    //                         borderWidth: 1
+    //                     },
+    //                     {
+    //                         label: 'Channel B',
+    //                         data: data.channelB,
+    //                         borderColor: 'rgba(255, 99, 132, 1)',
+    //                         borderWidth: 1
+    //                     }
+    //                 ]
+    //             },
+    //             options: {
+    //                 scales: {
+    //                     x: {
+    //                         title: {
+    //                             display: true,
+    //                             text: 'Time (ns)'
+    //                         }
+    //                     },
+    //                     y: {
+    //                         title: {
+    //                             display: true,
+    //                             text: 'Voltage (mV)'
+    //                         },
+    //                         beginAtZero: false
+    //                     }
+    //                 }
+    //             }
+    //         });
+    //     // Update the chart
+    //     signalChart.update();
+
+    //     });
 
         var signalButton = document.querySelector("#setSignalGeneratorButton");
         if (signalButton) {
             signalButton.addEventListener("click", setSignalGenerator);
         }
     
-        var updateChartButton = document.getElementById("updateChartButton");
-        if (updateChartButton) {
-            updateChartButton.addEventListener("click", updateChart);
-        }
+        // var updateChartButton = document.getElementById("updateChartButton");
+        // if (updateChartButton) {
+        //     updateChartButton.addEventListener("click", updateChart);
+        // }
 
     
 });

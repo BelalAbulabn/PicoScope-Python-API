@@ -7,6 +7,15 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js"></script>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+    <script src="https://unpkg.com/vue-chartjs@3.4.0/dist/vue-chartjs.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1/dist/vue-resource.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1/dist/vue-resource.min.js"></script>
+    
+
+
 </head>
 <body>
 
@@ -19,17 +28,31 @@
     {% endif %}
 
     <!-- Add HTML elements -->
-   
-    <div class="container">
+    <!-- <div class="container">
         
-        <div id="chart-controls">
+        <canvas id="line-chart" style="width: 600px; height: 400px;margin: 0 auto;"></canvas>
+
+           <input type="number" id="channelRange" placeholder="Channel Range">
+           <input type="number" id="bufferSize" placeholder="Buffer Size">
+           <input type="number" id="sampleInterval" placeholder="Sample Interval">
+           <button id="updateChartButton">Update Chart</button>
+       </div>
+       
+       <canvas id="signalChart"></canvas>
+    <div class="container">
+         -->
+         <div id="chart-controls">
+            <div id="line-chart">
+                <div style="width: 600px; height: 400px;margin: 0 auto;">
+                    <line-chart v-bind:chart-data="chartData"></line-chart>
+                </div>
+            </div>
             <input type="number" id="channelRange" placeholder="Channel Range">
             <input type="number" id="bufferSize" placeholder="Buffer Size">
             <input type="number" id="sampleInterval" placeholder="Sample Interval">
             <button id="updateChartButton">Update Chart</button>
         </div>
         
-        <canvas id="signalChart"></canvas>
         
            <!-- Settings Section -->
         <div class="settings-section">
