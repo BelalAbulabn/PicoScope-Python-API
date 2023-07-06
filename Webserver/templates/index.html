@@ -1,44 +1,70 @@
+
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>PicoScope Signal Generator</title>
-    <link rel="stylesheet" href="style.css">
-
-</head>
-<body>
-
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Real Time Sensor Display Using Python, Flask, Flask-SocketIO</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <link
+      href="//mincss.com/entireframework.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link href="{{url_for('static', filename = 'style.css')}}" rel="stylesheet">
+  </head>
+  <body>
     {% if not device_connected %}
-        <div style="color: red; text-align: center;">
-            <p>Error: Device not connected.</p>
-            <button onclick="attemptConnection()">Attempt Connection</button>
-            <div id="error"></div>
-        </div>
+    <div style="color: red; text-align: center;">
+        <p>Error: Device not connected.</p>
+        <button onclick="attemptConnection()">Attempt Connection</button>
+        <div id="error"></div>
+    </div>
     {% endif %}
+    <script type="text/javascript" src="{{ url_for('static', filename = 'script.js') }}"></script>
 
-    <!-- Add HTML elements -->
-    <div>
-  
-   
-            <label for="waveType">Wave Type:</label>
-        
-            <select id="waveType">
-                <option>PS4000A_SINE</option>
-                <option>PS4000A_SQUARE</option>
-                <option>PS4000A_TRIANGLE</option>
-                <option>PS4000A_RAMP_UP</option>
-                <option>PS4000A_RAMP_DOWN</option>
-                <option>PS4000A_SINC</option>
-                <option>PS4000A_GAUSSIAN</option>
-                <option>PS4000A_HALF_SINE</option>
-                <option>PS4000A_DC_VOLTAGE</option>
-                <option>PS4000A_WHITE_NOISE</option>
-                <option>PS4000A_PRBS</option>
-                <option>PS4000A_PULSE</option>
-                <option>PS4000A_MAX_WAVE_TYPES</option>
-                <!-- ... other options ... -->
-            </select>
+    <nav class="nav" tabindex="-1" onclick="this.focus()">
+      <div class="container">
+        <a class="pagename current" href="#">Pico WebApp</a>
+      </div>
+    </nav>
+    <button class="btn-close btn btn-sm">×</button>
+    <div class="container">
+      <div class="hero">
+        <h1>Real Time Ozillskop Display</h1>
+        <div class="chart-container">
+          <canvas id="myChart" width="1000" height="600"></canvas>
         </div>
+      </div>
+      <div>
+        <label for="maxDataCount">Max Data Count:</label>
+        <input type="number" id="maxDataCount" value="10">
+      </div>
+      <div class="settings-section">
+        <div>
+                <label for="waveType">Wave Type:</label>
+            
+                <select id="waveType">
+                    <option>PS4000A_SINE</option>
+                    <option>PS4000A_SQUARE</option>
+                    <option>PS4000A_TRIANGLE</option>
+                    <option>PS4000A_RAMP_UP</option>
+                    <option>PS4000A_RAMP_DOWN</option>
+                    <option>PS4000A_SINC</option>
+                    <option>PS4000A_GAUSSIAN</option>
+                    <option>PS4000A_HALF_SINE</option>
+                    <option>PS4000A_DC_VOLTAGE</option>
+                    <option>PS4000A_WHITE_NOISE</option>
+                    <option>PS4000A_PRBS</option>
+                    <option>PS4000A_PULSE</option>
+                    <option>PS4000A_MAX_WAVE_TYPES</option>
+                    <!-- ... other options ... -->
+                </select>
+        </div>   
+            
         <div>
             <label for="startFreq">Start Frequency:</label>
             <input type="text" id="startFreq">
@@ -50,7 +76,7 @@
     
         <div>
             <label for="increment">Increment:</label>
-            <input type="text" id="increment">	
+            <input type="text" id="increment" value="0">	
         </div>   
         <div>
             <label for="dwellTime">Dwell Time:</label>
@@ -69,22 +95,24 @@
             </select>
 
         </div>
+
+        <div>
+            <label for="peakToPeakVoltage">peak To Peak Voltage</label>
+            <input type="text" id="peakToPeakVoltage" value="2000000">
+        </div>
+        <div>
+
+            <div>
+                <button id="setSignalGeneratorButton">Set Signal Generator</button>
+            </div>
             
             <!-- ... other options ... -->
         </select>
-        
-        <label for="peakToPeakVoltage">Peak-to-Peak Voltage:</label>
-        <input type="text" id="peakToPeakVoltage" value="2000000">
 
-        
-        <div>
-    
-            <button onclick="setSignalGenerator()">Set Signal Generator</button>
-        <div> 
+  
+      </div>
+
+
     </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="script.js"></script>
-    <script src="script.js" defer></script>
-
-</body>
+  </body>
 </html>
