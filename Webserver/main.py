@@ -9,6 +9,11 @@ import pandas as pd
 from datetime import datetime, timedelta
 import random
 
+from flask import Flask, render_template, request
+from flask_socketio import SocketIO
+from random import random
+from threading import Lock
+from datetime import datetime
 sys.path.append('..')
 from GUI.ps4000aSigGen import PicoScope4000a
 from picosdk.errors import PicoSDKCtypesError
@@ -19,6 +24,7 @@ from GUI.PicoScope import PicoScope
 app = Flask(__name__)
 
 CORS(app)  
+
 try:
     picoscope = PicoScope()
     picoscope.open_device()
@@ -26,74 +32,70 @@ try:
 except PicoSDKCtypesError:
     device_connected = False
 now = datetime.now()
-configs = {
-	'Y1': (0, 250),
-	'Y2': (0, 500),
-	'Y3': (0, 750),
-}
 
-df_num_rows = 10000
-y_vals = {i: [random.randint(*configs[i]) for j in range(df_num_rows)] for i in configs}
-df = pd.DataFrame({
-	'X': ['{:%Y-%m-%d %H:%M:%S}'.format(now + timedelta(seconds=i)) for i in range(df_num_rows)],
-	**y_vals
-})
+"""
+Background Thread
+"""
+thread = None
+thread_lock = Lock()
 
-df.to_csv('test_data.csv', index=False)
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'donsky!'
+socketio = SocketIO(app, cors_allowed_origins='*')
 
+"""
+Get current date time
+"""
+def get_current_datetime():
+    now = datetime.now()
+    return now.strftime("%H:%M:%S")
+
+"""
+Generate random sequence of dummy sensor values and send it to our clients
+"""
+def background_thread():
+    print("Generating random sensor values")
+    while True:
+        # Assuming you have 3 channels.
+        dummy_sensor_value1 = round(random() * 100, 50)
+        dummy_sensor_value2 = round(random() * 100, 50)
+        dummy_sensor_value3 = round(random() * 100, 50)
+        socketio.emit('updateSensorData', 
+                      {'channel1': dummy_sensor_value1, 
+                       'channel2': dummy_sensor_value2, 
+                       'channel3': dummy_sensor_value3, 
+                       "date": get_current_datetime()})
+        socketio.sleep(1)
+
+
+"""
+Serve root index file
+"""
 @app.route('/')
-def home():
+def index():
     return render_template('index.html',device_connected=device_connected)
-# Ensure picoscope is initialized and open before use
 
+"""
+Decorator for connect
+"""
+@socketio.on('connect')
+def connect():
+    global thread
+    print('Client connected')
 
-@app.route('/fetch-data')
-def fetch_data():
-    print("fetch_data route is being executed")
-    try:
-        print("Inside the try block")
-        # Get parameters from the query string
-        channel_range = request.args.get('channelRange', default=5, type=int)
-        print("Channel range:", channel_range)
-        buffer_size = request.args.get('bufferSize', default=500, type=int)
-        print("Buffer size:", buffer_size)
-        sample_interval = request.args.get('sampleInterval', default=250, type=int)
-        print("Sample interval:", sample_interval)
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(background_thread)
 
-        # Set channel A and B
-        picoscope.set_channels(channel_range)
-        print("Channels set")
- 
-        # Set buffer size for streaming
-        picoscope.set_data_buffers(buffer_size)
-        print("Buffers set")
+"""
+Decorator for disconnect
+"""
+@socketio.on('disconnect')
+def disconnect():
+    print('Client disconnected',  request.sid)
 
-        # Get sample units and max pre-trigger samples
-        sample_units = ps.PS4000A_TIME_UNITS['PS4000A_US']
-        max_pre_trigger_samples = 0
-
-        # Run streaming with sample_interval and fetch the data
-        adc2mVChAMax, adc2mVChBMax = picoscope.run_streaming(sample_interval=sample_interval, 
-                                                             sample_units=sample_units, 
-                                                             max_pre_trigger_samples=max_pre_trigger_samples)
-        print("Streaming done")
-
-        # Print fetched data to console
-        print("Channel A data:", adc2mVChAMax)
-        print("Channel B data:", adc2mVChBMax)
-
-        # Create time array based on the sample interval and number of samples
-        total_samples = len(adc2mVChAMax)  # assuming both channels return same number of samples
-        time_array = np.linspace(0, (total_samples - 1) * sample_interval, total_samples)
-
-        # Return the data as JSON
-        return jsonify({'time': time_array.tolist(), 'channelA': adc2mVChAMax.tolist(), 'channelB': adc2mVChBMax.tolist()})
-
-    except Exception as e:
-        print("Error in fetch_data:", str(e))
-        return str(e), 500
-
-
+      
 @app.route('/set_signal_generator', methods=['POST'])
 def set_signal_generator():
     if not device_connected:
@@ -110,9 +112,8 @@ def set_signal_generator():
 
     picoscope.set_signal_generator(wavetype, start_freq, stop_freq, increment, dwell_time, sweep_type, pk_to_pk)
 
-    return jsonify({'status': 'success'})
-
-
+    return jsonify({'status': 'success'})    
+    
 @app.route('/connect_device', methods=['POST'])
 def connect_device():
     global device_connected
@@ -125,50 +126,7 @@ def connect_device():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
 
-@app.route('/fetchig_data')
-def fetchig_data():
-	offset = request.args.get('offset', default = 1, type = int) # rows to skip
-	limit = request.args.get('limit', default = 1, type = int) # number of rows
-	df = pd.read_csv('test_data.csv', # here we just import the data we need from the csv, accordding with client parameters
-		skiprows=range(1, offset+1), # ignore rows in the interval
-      		nrows=limit, # limited to n rows, 1 after the first request
-      		parse_dates=['X']) 
-
-	cols = [col for col in df.columns if col.startswith('Y')]
-
-	configs = {
-		'Y1': {'color': '#483D8B', 'col_name': 'name_Y1'},
-		'Y2': {'color': '#f87979', 'col_name': 'name_Y2'},
-		'Y3': {'color': '#00BFFF', 'col_name': 'name_Y3'},
-	}
-
-	datasets = []
-	for k, c in enumerate(cols):
-		datasets.append({ # our datasets configs
-			'label': configs[c]['col_name'],
-			'borderColor': configs[c]['color'],
-			'backgroundColor': configs[c]['color'],
-			'borderWidth': 2,
-			'pointBorderColor': '#000000',
-			'lineTension': k*0.23, # line curve
-			'pointRadius': 2,
-			'pointBorderWidth': 1,
-			'fill': False,
-			'data': df[c].tolist()
-		})
-
-	chart = {
-		'labels': df['X'].dt.strftime('%H:%M:%S').tolist(),
-		'datasets': datasets
-	}
-        
-    # return render_template('index.html',device_connected=device_connected)
-
-	return jsonify({'chart_data': chart})
-    
-
-
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app)
