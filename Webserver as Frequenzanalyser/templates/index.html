@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>frequency response analyzer with picoscope 4824a</title>
+    <link rel="icon" type="image/png" href="static/icon.png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="/static/plotly.min.js"></script>
+    <script src="/static/PicoJS.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+           rel="stylesheet" 
+           integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
+           crossorigin="anonymous">
+</head>
+<body>
+    <nav class="navbar bg-dark navbar-black">
+        <a href="#" class="navbar-brand">picoscope 4824a</a>
+        <ul class="navbar-nav">
+            <li class=""><div>example1</div></li>
+            <li class=""><div>example2</div></li>
+        </ul>
+    </nav>
+    <h1 id="title" data-text="Frequency Response Analyzer">Title</h1>
+
+
+            </form>
+            <form id="theForm3"  method="post" value="1">
+                       <!-- Buttons Container -->
+                <div class="form-row">
+                    <button id="calibrateButton" class="btn btn-primary" type="button">Kalibrieren</button>
+
+                       
+                </div>
+                <button id="measureButton" class="btn btn-primary" type="button">Messung starten</button>
+                <button id="attenuationButton" class="btn btn-primary" type="button">Dämpfung berechnen und anzeigen</button>
+                
+            </form>       
+
+        </div>
+                
+        <div id ="chartContainer" style="width: 70%; margin: auto;"></div>
+
+        <script>
+            var frequencyStr ="{{ frequency | tojson }}" ;
+            var totalSpectrumStr = "{{ total_spectrum | tojson }}";
+            // string --> array
+            var frequency = JSON.parse(frequencyStr);
+            var total_spectrum = JSON.parse(totalSpectrumStr);
+            // plotly
+            var data = [{
+                x: frequency,
+                y: total_spectrum,
+                type: 'scatter',
+                mode: 'markers+lines',
+                marker: { size: 5 },
+                hoverinfo: 'x+y' , 
+                hovertemplate: 'Frequency: %{x} Hz<br>Magnitude: %{y} dB',
+            }];
+
+            var layout = {
+                // title: 'Frequency Response',
+                title: {
+                    text: 'FREQUENCY  RESPONSE',
+                    font: {
+                        family: 'sans-serif', 
+                        size: 18,  
+                        color: '#3d7eb0'  
+                    }
+                },
+                xaxis: { title: 'Frequency (Hz)',},
+                yaxis: { title: 'Magnitude (dB)' },
+                hovermode: 'closest',  
+            };
+
+            Plotly.newPlot('chartContainer', data, layout);
+        </script> 
+
+
+    
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+                    $(document).ready(function() {
+                $('#calibrateButton').click(function() {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/calibrate',
+                        contentType: 'application/json;charset=UTF-8',
+                        success: function(response) {
+                            // Handle success
+                            alert('Calibration started');
+                        },
+                        error: function(error) {
+                            // Handle error
+                            console.log(error);
+                            alert('Error starting calibration');
+                        }
+                    });
+                });
+
+                // $('#measureButton').click(function(e) {
+                //     e.preventDefault();
+                //     // Show loading indicator
+                //     $('#loading').show();
+
+                //     $.ajax({
+                //         // Your AJAX setup
+                //         success: function(response) {
+                //             // Hide loading indicator
+                //             $('#loading').hide();
+                //             // Alert or update the UI with the result
+                //             alert('Measurement started');
+                //         },
+                //         error: function(error) {
+                //             // Hide loading indicator
+                //             $('#loading').hide();
+                //             // Handle error
+                //             console.log(error);
+                //             alert('Error starting measurement');
+                //         }
+                //     });
+                // });
+
+
+                $('#measureButton').click(function() {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/measure',
+                        contentType: 'application/json;charset=UTF-8',
+                        success: function(response) {
+                            // Handle success
+                            alert('Measurement started');
+                        },
+                        error: function(error) {
+                            // Handle error
+                            console.log(error);
+                            alert('Error starting measurement');
+                        }
+                    });
+                });
+
+                $('#attenuationButton').click(function() {
+                        $.ajax({
+                            type: 'POST',
+                            url: '/calculate_attenuation',
+                            contentType: 'application/json;charset=UTF-8',
+                            success: function(response) {
+                                if (response.status === 'success' && Array.isArray(response.attenuation)) {
+                                    // Extract frequency and attenuation data from the response
+                                    const frequency = response.attenuation.map(item => item.frequency);
+                                    const attenuation_dB = response.attenuation.map(item => item.dB);
+
+                                    // Update Plotly chart layout
+                                    Plotly.relayout('chartContainer', {
+                                        'xaxis.type': 'log',
+                                        'xaxis.title': 'Frequency (Hz)',
+                                        'yaxis.title': 'Attenuation (dB)',
+                                        'yaxis.range': [-60, 10] 
+                                    });
+
+                                    // Update Plotly chart with new data
+                                    Plotly.update('chartContainer', {
+                                        x: [frequency],
+                                        y: [attenuation_dB],
+                                        hovertemplate: 'Frequency: %{x} Hz<br>Attenuation: %{y} dB'
+                                    });
+
+                                    alert('Attenuation calculated and plotted');
+                                } else {
+                                    console.log('Error or invalid format in calculating attenuation');
+                                         alert('Error calculating attenuation');
+                                }
+                            },
+                            error: function(error) {
+                                console.log(error);
+                                alert('Error calculating attenuation');
+                            }
+                        });
+                    });
+
+            });
+
+        </script>    
+</body>
+</html>
+
