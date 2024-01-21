@@ -1,0 +1,139 @@
+.navbar-brand {
+  color: white !important;
+  margin: 0 7vh;
+}
+
+.navbar {
+  height: 7vh;
+}
+.navbar-brand,
+.navbar-nav li div {
+  font-size: 9px; 
+}
+
+#title {
+  text-align: center;
+  letter-spacing :0.5em;
+  font-size: 2em;
+  margin-top: 3vh;
+  margin-bottom: 3vh;
+  text-shadow: 
+      2px 2px 4px rgba(228, 231, 250, 0.5), 
+      -2px -2px 4px rgba(143, 144, 146, 0.7);
+  text-transform: uppercase;
+}
+
+#subtitle {
+  text-align: center; 
+  font-size: 15px;
+  color: rgb(70, 64, 64);
+  font-family:Arial, Helvetica, sans-serif;
+  margin-bottom: 3vh;
+}
+
+body {
+  background-color: #f0f2f5; 
+  height: 200vh;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  overflow: hidden;
+}
+
+.container1{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; 
+  width: 35%;
+  height: 75vh;
+  margin-right: auto;
+  margin-left: 3%;
+  background: linear-gradient(200deg, #172e41, #5e82a0);
+  color: #FFFFFF;
+  border: solid transparent;
+  border-width: 0 0 4px;
+  border-radius: 16px 0 0 16px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+#chartContainer {
+  width: 70%;
+  margin: auto;  margin-top: 0%;
+  max-width: 2000px; /* Adjust as needed */
+  height: 1000px;
+  margin-left: 0%;
+  margin-right: 3%;
+  border: solid transparent;
+  border-width: 0 0 0px;
+  border-radius: 0 16px 16px 0;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+#triggerlevel::placeholder {
+  color: black; 
+}
+#samplerate::placeholder {
+  color: black; 
+}
+#frequency::placeholder {
+  color: black; 
+}
+#amplitude::placeholder {
+  color: black; 
+}
+
+.fuxuankuang label span {
+  font-family: din-round, sans-serif; 
+  font-size: 15px; 
+  font-weight: 700; 
+  letter-spacing: .8px;
+  line-height: 20px;
+  text-transform: uppercase;
+}
+
+.fuxuankuang{
+  width: 100%;
+  height: 20%;
+  margin-bottom: 5%;
+  margin-top: 12%;
+  margin-left: 10%; 
+}
+
+.fuxuankuang label span {
+  display: inline-block;
+  transition: transform 0.3s ease, margin-top 0.3s ease;
+}
+
+.fuxuankuang label:hover span {
+  transform: scale(1.05);
+  margin-top: -5px;
+}
+
+.form-row {
+  flex: 0 0 auto; 
+  width: 35vh;
+  display: flex;
+  align-items: flex-start;
+  margin-left: 20%; 
+  font-family: Helvetica;
+  font-size: 15px;
+}
+
+.form-row label {
+  flex: 0 0 auto; 
+  text-align: justify;
+  width: 25vh;
+  white-space: nowrap; 
+}
+
+.form-row input {
+  flex: 0 0 auto; 
+  width: 25vh; 
+}
+.form-row select {
+  flex: 0 0 auto; 
+  width: 25vh; 
+}
+
