@@ -19,6 +19,7 @@ class PicoScopeController:
         self.listofvalues = []
         self.calibration_values = []  # Liste für Kalibrierungswerte
         self.dut_values = [] # Liste für DUT-Messwerte
+        self.dut_value = [] # Liste für DUT-Messwerte
         self.script_dir = os.path.dirname(os.path.realpath(__file__))  # Directory of the script
 
     def open_unit(self):
@@ -132,7 +133,7 @@ class PicoScopeController:
             print("Error: Calibration and DUT values lengths do not match")
             return
 
-        attenuation_dB = [5 * np.log10(calib / dut) if dut != 0 else 0 for dut, calib in zip(self.calibration_values, self.dut_values)]
+        attenuation_dB = [20 * np.log10(calib / dut) if dut != 0 else 0 for dut, calib in zip(self.calibration_values, self.dut_values)]
         three_db_index = np.where(np.array(attenuation_dB) <= -3)[0]
         if len(three_db_index) > 0:
             three_db_index = three_db_index[0]  # Taking the first occurrence
@@ -143,6 +144,7 @@ class PicoScopeController:
 
         plt.figure()
         plt.plot(frequencies, attenuation_dB, marker='o')
+        self.dut_value=attenuation_dB
         plt.xscale("log")
         plt.xlabel('Frequency (Hz)')
         plt.ylabel('Attenuation (dB)')
@@ -255,8 +257,19 @@ class PicoScopeController:
         plt.show()
 
 
+    def save_dut_values_to_csv(self, frequencies, magnitudes, file_path):
+        """
+        Save the DUT values to a CSV file, including frequencies and magnitudes.
 
-
+        :param frequencies: List of frequency values.
+        :param magnitudes: List of magnitude values.
+        :param file_path: The path where the CSV file will be saved.
+        """
+        with open(file_path, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['Frequency (Hz)', 'TR1: Gain (dB)'])  # Column headers
+            for freq, mag in zip(frequencies, magnitudes):
+                writer.writerow([freq, mag])
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -265,7 +278,7 @@ class Application(tk.Frame):
         self.pico_controller = PicoScopeController()
         self.create_widgets()
         self.pack()  # Ensure the frame is packed in the main window
-        self.frequencies = np.logspace(2,np.log10(7*10**5),30)  # Define your frequency range here
+        self.frequencies = np.logspace(2,np.log10(7*10**5),200)  # Define your frequency range here
 
     def create_widgets(self):
         self.calibrate_button = tk.Button(self)
@@ -296,6 +309,7 @@ class Application(tk.Frame):
         measure_thread.start()
     def calculate_and_show_attenuation(self):
         self.pico_controller.calculate_and_plot_attenuation(self.frequencies)
+        self.pico_controller.save_dut_values_to_csv(self.frequencies, self.pico_controller.dut_value, 'dut_values1.csv')
 
 root = tk.Tk()
 app = Application(master=root)
